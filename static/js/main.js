@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // DOM Elements
     const refreshBtn = document.getElementById("refresh-btn");
     const refreshIcon = document.getElementById("refresh-icon");
+    const exportBtn = document.getElementById("export-btn");
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
     const searchInput = document.getElementById("search-input");
     const loader = document.getElementById("loader");
     const errorState = document.getElementById("error-state");
@@ -20,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModal = document.getElementById("close-modal");
     
     let allReleases = [];
+    let displayedReleases = [];
 
     // Format Date beautifully
     function formatDate(dateStr) {
@@ -89,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Render list of releases
     function renderReleases(releases) {
+        displayedReleases = releases;
         releasesList.innerHTML = "";
         
         if (releases.length === 0) {
@@ -116,6 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="release-date"><i class="fa-regular fa-calendar-days"></i> ${dateStr}</span>
                     </div>
                     <div class="card-actions">
+                        <button class="btn-icon btn-copy-icon" title="Copy release notes text">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
                         <button class="btn-icon btn-tweet-icon" title="Tweet about this update">
                             <i class="fa-brands fa-x-twitter"></i>
                         </button>
@@ -128,6 +136,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${release.content}
                 </div>
             `;
+
+            // Bind Copy Button
+            const copyBtn = card.querySelector(".btn-copy-icon");
+            copyBtn.addEventListener("click", async () => {
+                const cleanContent = stripHtml(release.content).trim();
+                const copyText = `BigQuery Update: ${release.title}\nDate: ${dateStr}\n\n${cleanContent}\n\nRead more: ${release.link}`;
+                
+                try {
+                    await navigator.clipboard.writeText(copyText);
+                    const icon = copyBtn.querySelector("i");
+                    icon.className = "fa-solid fa-check";
+                    copyBtn.style.backgroundColor = "var(--success)";
+                    copyBtn.style.color = "var(--bg-primary)";
+                    
+                    setTimeout(() => {
+                        icon.className = "fa-regular fa-copy";
+                        copyBtn.style.backgroundColor = "";
+                        copyBtn.style.color = "";
+                    }, 2000);
+                } catch (err) {
+                    console.error("Failed to copy text: ", err);
+                }
+            });
 
             // Bind Tweet Button
             const tweetBtn = card.querySelector(".btn-tweet-icon");
@@ -204,6 +235,39 @@ document.addEventListener("DOMContentLoaded", () => {
         closeTweetModal();
     });
 
+    // Export current view to CSV
+    exportBtn.addEventListener("click", () => {
+        if (displayedReleases.length === 0) {
+            alert("No release notes to export.");
+            return;
+        }
+
+        const headers = ["Title", "Published Date", "Link", "Content"];
+        const rows = displayedReleases.map(release => {
+            const cleanContent = stripHtml(release.content)
+                .replace(/"/g, '""') // Escape double quotes
+                .trim();
+            const dateStr = formatDate(release.updated);
+            
+            return [
+                `"${release.title.replace(/"/g, '""')}"`,
+                `"${dateStr.replace(/"/g, '""')}"`,
+                `"${release.link.replace(/"/g, '""')}"`,
+                `"${cleanContent}"`
+            ];
+        });
+
+        const csvString = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bigquery_releases_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
     // Search logic with simple debouncing
     let searchTimeout;
     searchInput.addEventListener("input", (e) => {
@@ -223,6 +287,23 @@ document.addEventListener("DOMContentLoaded", () => {
             
             renderReleases(filtered);
         }, 300);
+    });
+
+    // Theme Switcher Logic
+    if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light-theme");
+        themeIcon.className = "fa-solid fa-moon";
+    }
+
+    themeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light-theme");
+        if (document.body.classList.contains("light-theme")) {
+            localStorage.setItem("theme", "light");
+            themeIcon.className = "fa-solid fa-moon";
+        } else {
+            localStorage.setItem("theme", "dark");
+            themeIcon.className = "fa-solid fa-sun";
+        }
     });
 
     // Initial Load
