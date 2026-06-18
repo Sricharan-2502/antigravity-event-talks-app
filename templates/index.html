@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore, search, and share the latest Google Cloud BigQuery release notes. Easily tweet updates with integrated Twitter Web Intents.">
+    <title>BigQuery Release Notes Explorer</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar or Header Panel -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>BigQuery</h1>
+                    <span>Release Notes Hub</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button id="refresh-btn" class="btn btn-primary" title="Refresh Release Notes">
+                    <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Stats / Info Bar -->
+            <div class="info-bar">
+                <div class="feed-info">
+                    <i class="fa-solid fa-rss text-accent"></i>
+                    <span id="feed-status">Loading feed updates...</span>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="Search releases...">
+                </div>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" class="loader-container">
+                <div class="spinner"></div>
+                <p>Fetching latest BigQuery release notes...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="error-container hidden">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3>Failed to load release notes</h3>
+                <p id="error-message">Unknown error occurred.</p>
+                <button id="retry-btn" class="btn btn-secondary">Retry Connection</button>
+            </div>
+
+            <!-- Release Notes List -->
+            <div id="releases-list" class="releases-list hidden">
+                <!-- Cards will be populated here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Tweet Modal / Editor -->
+    <div id="tweet-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-brands fa-x-twitter"></i> Share Update on X / Twitter</h2>
+                <button class="close-btn" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-card-info">
+                    <strong id="tweet-preview-title">Release Title</strong>
+                    <p id="tweet-preview-date">Date</p>
+                </div>
+                <div class="tweet-editor-container">
+                    <textarea id="tweet-text" rows="5" maxlength="280" placeholder="What would you like to tweet?"></textarea>
+                    <div class="tweet-footer">
+                        <span id="char-count">280</span>
+                        <div class="tweet-actions">
+                            <button id="tweet-now-btn" class="btn btn-tweet">
+                                <i class="fa-brands fa-x-twitter"></i> Tweet Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
