@@ -57,10 +57,51 @@
                 </div>
             </div>
 
+            <!-- Filter Chips -->
+            <div class="filter-chips-container" id="filter-chips">
+                <button class="chip active" data-filter="all">All Updates</button>
+                <button class="chip" data-filter="feature">Features</button>
+                <button class="chip" data-filter="deprecated">Deprecations</button>
+                <button class="chip" data-filter="resolved">Resolved</button>
+                <button class="chip" data-filter="info">General Info</button>
+            </div>
+
             <!-- Loader -->
             <div id="loader" class="loader-container">
-                <div class="spinner"></div>
-                <p>Fetching latest BigQuery release notes...</p>
+                <div class="skeleton-list">
+                    <div class="skeleton-card">
+                        <div class="skeleton-header">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-actions"></div>
+                        </div>
+                        <div class="skeleton-content">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line short"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-header">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-actions"></div>
+                        </div>
+                        <div class="skeleton-content">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line short"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-card">
+                        <div class="skeleton-header">
+                            <div class="skeleton-title"></div>
+                            <div class="skeleton-actions"></div>
+                        </div>
+                        <div class="skeleton-content">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Error State -->

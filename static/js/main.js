@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     let allReleases = [];
     let displayedReleases = [];
+    let selectedCategory = "all";
+    let searchQuery = "";
 
     // Format Date beautifully
     function formatDate(dateStr) {
@@ -37,19 +39,46 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Classify content to add badges (Features, Deprecations, Resolved, etc.)
-    function detectBadge(content, title) {
+    // Classify category badge keywords
+    function getBadgeType(content, title) {
         const text = (content + " " + title).toLowerCase();
         if (text.includes("deprecation") || text.includes("deprecated")) {
-            return '<span class="badge badge-deprecated">Deprecated</span>';
+            return "deprecated";
         }
         if (text.includes("resolved") || text.includes("fixed") || text.includes("bug fix")) {
-            return '<span class="badge badge-changed">Resolved</span>';
+            return "resolved";
         }
         if (text.includes("feature") || text.includes("introducing") || text.includes("new support") || text.includes("generally available") || text.includes("beta")) {
-            return '<span class="badge badge-feature">Feature</span>';
+            return "feature";
         }
+        return "info";
+    }
+
+    // Classify content to add badges (Features, Deprecations, Resolved, etc.)
+    function detectBadge(content, title) {
+        const type = getBadgeType(content, title);
+        if (type === "deprecated") return '<span class="badge badge-deprecated">Deprecated</span>';
+        if (type === "resolved") return '<span class="badge badge-changed">Resolved</span>';
+        if (type === "feature") return '<span class="badge badge-feature">Feature</span>';
         return '<span class="badge badge-info">Update</span>';
+    }
+
+    // Unified filtering logic matching search and chips
+    function applyFilters() {
+        const filtered = allReleases.filter(release => {
+            // Check category filter matches
+            const categoryMatch = selectedCategory === "all" || getBadgeType(release.content, release.title) === selectedCategory;
+            
+            // Check search matches
+            const cleanContent = stripHtml(release.content).toLowerCase();
+            const titleMatch = release.title.toLowerCase().includes(searchQuery);
+            const contentMatch = cleanContent.includes(searchQuery);
+            const searchMatch = searchQuery === "" || titleMatch || contentMatch;
+
+            return categoryMatch && searchMatch;
+        });
+
+        renderReleases(filtered);
     }
 
     // Clean HTML content for tweet preview/drafting
@@ -74,7 +103,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.status === "success") {
                 allReleases = data.releases;
-                renderReleases(allReleases);
+                
+                // Reset visual inputs and memory states on refresh
+                searchQuery = "";
+                searchInput.value = "";
+                selectedCategory = "all";
+                document.querySelectorAll(".chip").forEach(c => {
+                    c.classList.remove("active");
+                    if (c.dataset.filter === "all") c.classList.add("active");
+                });
+                
+                applyFilters();
                 feedStatus.textContent = `Last updated: ${new Date().toLocaleTimeString()} (${allReleases.length} updates found)`;
                 
                 // Show list, hide loader
@@ -273,20 +312,20 @@ document.addEventListener("DOMContentLoaded", () => {
     searchInput.addEventListener("input", (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            const query = e.target.value.toLowerCase().trim();
-            if (query === "") {
-                renderReleases(allReleases);
-                return;
-            }
-
-            const filtered = allReleases.filter(release => {
-                const titleMatch = release.title.toLowerCase().includes(query);
-                const contentMatch = stripHtml(release.content).toLowerCase().includes(query);
-                return titleMatch || contentMatch;
-            });
-            
-            renderReleases(filtered);
+            searchQuery = e.target.value.toLowerCase().trim();
+            applyFilters();
         }, 300);
+    });
+
+    // Chip filter listeners
+    const chips = document.querySelectorAll(".chip");
+    chips.forEach(chip => {
+        chip.addEventListener("click", () => {
+            chips.forEach(c => c.classList.remove("active"));
+            chip.classList.add("active");
+            selectedCategory = chip.dataset.filter;
+            applyFilters();
+        });
     });
 
     // Theme Switcher Logic
